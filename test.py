@@ -1,32 +1,27 @@
-import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
+# Load your CSV
+df = pd.read_csv("chart_2.csv")
 
-def mad(data) -> float:
-    """
-    Calculate the Mean Absolute Deviation (MAD).
+# Rename strategies for clarity
+df["transferstrat"] = df["transferstrat"].replace({
+    "1000_global_lstm_lstm": "QuantNet",
+    "1000_no_transfer_linear": "No Transfer"
+})
 
-    Parameters
-    ----------
-    data : list, numpy.ndarray, or pandas.Series
-        Input data.
+# Pivot to wide format: one column for each strategy
+pivot_df = df.pivot(index="exchange", columns="transferstrat", values="SR")
 
-    Returns
-    -------
-    float
-        Mean absolute deviation.
-    """
-    arr = np.asarray(data)  # convert to numpy array
-    mean_val = np.mean(arr)
-    mad = np.mean(np.abs(arr - mean_val))
-    return mad
+# Plot grouped bar chart
+ax = pivot_df.plot(kind="bar", figsize=(14,6), width=0.8)
 
+plt.ylabel("Sharpe ratio")
+plt.xlabel("Region_Market")
+plt.title("Sharpe ratio comparison: QuantNet vs No Transfer")
+plt.axhline(0, color="gray", linewidth=0.8)
 
-# Example DataFrame
-df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 12, 23, 23, 16]})
-
-# Calculate MAD for column A
-print("MAD of A:", mad(df["A"]))
-
-# Calculate MAD for column B
-print("MAD of B:", mad(df["B"]))
+plt.xticks(rotation=75, ha="right")
+plt.legend(title="")
+plt.tight_layout()
+plt.show()
