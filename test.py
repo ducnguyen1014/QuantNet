@@ -1,27 +1,36 @@
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
-# Load your CSV
-df = pd.read_csv("chart_2.csv")
+# Example dataframe with multi-level columns
+data = {
+    ("Height", "mean"): [170, 165, 180],
+    ("Height", "sd"): [5, 6, 4],
+    ("Weight", "mean"): [65, 70, 80],
+    ("Weight", "sd"): [3, 4, 5],
+}
+df = pd.DataFrame(data)
 
-# Rename strategies for clarity
-df["transferstrat"] = df["transferstrat"].replace({
-    "1000_global_lstm_lstm": "QuantNet",
-    "1000_no_transfer_linear": "No Transfer"
-})
+# Prepare column labels as two rows
+columns = pd.MultiIndex.from_tuples(df.columns)
+col_labels = [columns.get_level_values(0), columns.get_level_values(1)]
 
-# Pivot to wide format: one column for each strategy
-pivot_df = df.pivot(index="exchange", columns="transferstrat", values="SR")
+fig, ax = plt.subplots(figsize=(6, 3))
+ax.axis("off")
 
-# Plot grouped bar chart
-ax = pivot_df.plot(kind="bar", figsize=(14,6), width=0.8)
+# Draw the table (data only, no headers)
+table = ax.table(
+    cellText=df.values,
+    rowLabels=[f"Row {i}" for i in df.index],
+    colLabels=col_labels[1],  # bottom-level labels
+    cellLoc="center",
+    loc="center",
+)
 
-plt.ylabel("Sharpe ratio")
-plt.xlabel("Region_Market")
-plt.title("Sharpe ratio comparison: QuantNet vs No Transfer")
-plt.axhline(0, color="gray", linewidth=0.8)
+# Add the top-level labels manually
+for j, label in enumerate(col_labels[0]):
+    table.add_cell(-2, j, width=table[0, j].get_width(), height=0.2)
+    table[-2, j].get_text().set_text(label)
+    table[-2, j].set_fontsize(10)
+    table[-2, j].set_facecolor("#f0f0f0")
 
-plt.xticks(rotation=75, ha="right")
-plt.legend(title="")
-plt.tight_layout()
 plt.show()
